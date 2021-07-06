@@ -1,3 +1,6 @@
+function hey() {
+	alert('hey');
+}
 /* Lesson 3 */
 /* FUNCTIONS */
 
@@ -10,24 +13,23 @@ function add(number1, number2) {
 // Step 3: Step 3: Using function declaration, define another function named addNumbers that gets the values of two HTML form controls with IDs of addend1 and addend2. Pass them to the add function
 // Step 4: Assign the return value to an HTML form element with an ID of sum
 function addNumbers() {
-	const addend1 = parseInt(document.getElementById("addend1").value);
-	const addend2 = parseInt(document.getElementById("addend2").value);
-	console.log(addend1);
-	console.log(addend2);
-	const addition = add(addend1, addend2);
-	const additionSt = addition.toString();
+	let addend1 = document.getElementById("addend1").value;
+	let addend2 = document.getElementById("addend2").value;
+	let addend1_parsed = parseInt(addend1);
+	let addend2_parsed = parseInt(addend2);
+	console.log(addend1_parsed);
+	console.log(addend2_parsed);
+	let addition = add(addend1_parsed, addend2_parsed);
+	let additionSt = addition.toString();
 	console.log(addition);
 	console.log(additionSt);
-	const sumBox = document.getElementById("sum");
-	sumBox.innerText = additionSt;
-}
-function hey() {
-	alert('hey');
+	sumHtml.value = additionSt;
 }
 
 // Step 5: Add a "click" event listener to the HTML button with an ID of addNumbers that calls the addNumbers function
 const button = document.getElementById("addNumbers");
-button.addEventListener("click", hey);
+const sumHtml = document.getElementById("sum");
+button.addEventListener("click", addNumbers);
 
 // Step 6: Using function expressions, repeat Steps 1-5 with new functions named subtract and subtractNumbers and HTML form controls with IDs of minuend, subtrahend, difference and subtractNumbers
 /** Substract */
