@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<!-- saved from url=(0024)http://callbackhell.com/ -->
+<html class="js-focus-visible" data-js-focus-visible=""><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Callback Hell</title>
+
+    <link rel="stylesheet" href="./Callback Hell_files/style.css">
+    <link rel="stylesheet" href="./Callback Hell_files/rainbow.github.css">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  <style type="text/css">
+@font-face {
+  font-weight: 400;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Book-cd7d2bcec649b1243839a15d5eb8f0a3.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 500;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Medium-d74eac43c78bd5852478998ce63dceb3.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 700;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Bold-83b8ceaf77f49c7cffa44107561909e4.woff2') format('woff2');
+}
+
+@font-face {
+  font-weight: 900;
+  font-style:  normal;
+  font-family: 'Circular-Loom';
+
+  src: url('https://cdn.loom.com/assets/fonts/circular/CircularXXWeb-Black-bf067ecb8aa777ceb6df7d72226febca.woff2') format('woff2');
+}</style></head>
+  <body>
+    <div id="container">
+      <div id="main">
+        <div id="post" class="sticky-menu">
+          <div class="inner clearfix">
+            <div class="document prose">
+              <div class="surface preview">
+                <div class="content-preview-wrapper">
+                  <div class="content-preview">
+                    <div class="post-content" style="white-space: normal;"><h1>Callback Hell</h1>
+<p><em>A guide to writing asynchronous JavaScript programs</em>
+
+</p>
+<h3>What is "<em>callback hell</em>"?</h3>
+<p>Asynchronous JavaScript, or JavaScript that uses callbacks, is hard to get right intuitively. A lot of code ends up looking like this:
+
+</p>
+<pre><code data-language="javascript" class="rainbow">fs.<span class="function call">readdir</span>(source, <span class="storage function">function</span> (err, files) {
+  <span class="keyword">if</span> (err) {
+    console.<span class="support method">log</span>(<span class="string">'Error finding files: '</span> <span class="keyword operator">+</span> err)
+  } <span class="keyword">else</span> {
+    files.<span class="keyword">forEach</span>(<span class="storage function">function</span> (filename, fileIndex) {
+      console.<span class="support method">log</span>(filename)
+      <span class="function call">gm</span>(source <span class="keyword operator">+</span> filename).<span class="function call">size</span>(<span class="storage function">function</span> (err, values) {
+        <span class="keyword">if</span> (err) {
+          console.<span class="support method">log</span>(<span class="string">'Error identifying file size: '</span> <span class="keyword operator">+</span> err)
+        } <span class="keyword">else</span> {
+          console.<span class="support method">log</span>(filename <span class="keyword operator">+</span> <span class="string">' : '</span> <span class="keyword operator">+</span> values)
+          aspect <span class="keyword operator">=</span> (values.width / values.height)
+          widths.<span class="keyword">forEach</span>(<span class="storage function">function</span> (width, widthIndex) {
+            height <span class="keyword operator">=</span> Math.<span class="function call">round</span>(width / aspect)
+            console.<span class="support method">log</span>(<span class="string">'resizing '</span> <span class="keyword operator">+</span> filename <span class="keyword operator">+</span> <span class="string">'to '</span> <span class="keyword operator">+</span> height <span class="keyword operator">+</span> <span class="string">'x'</span> <span class="keyword operator">+</span> height)
+            <span class="keyword">this</span>.<span class="function call">resize</span>(width, height).<span class="function call">write</span>(dest <span class="keyword operator">+</span> <span class="string">'w'</span> <span class="keyword operator">+</span> width <span class="keyword operator">+</span> <span class="string">'_'</span> <span class="keyword operator">+</span> filename, <span class="keyword">function</span>(err) {
+              <span class="keyword">if</span> (err) console.<span class="support method">log</span>(<span class="string">'Error writing file: '</span> <span class="keyword operator">+</span> err)
+            })
+          }.<span class="function call">bind</span>(<span class="keyword">this</span>))
+        }
+      })
+    })
+  }
+})</code></pre>
+<p>See the pyramid shape and all the <code data-language="javascript" class="rainbow">})</code> at the end? Eek! This is affectionately known as <strong>callback hell</strong>.
+
+</p>
+<p>The cause of callback hell is when people try to write JavaScript in a way where execution happens visually from top to bottom. Lots of people make this mistake! In other languages like C, Ruby or Python there is the expectation that whatever happens on line 1 will finish before the code on line 2 starts running and so on down the file. As you will learn, JavaScript is different.
+
+</p>
+<h2>What are callbacks?</h2>
+<p>Callbacks are just the name of a convention for using JavaScript functions. There isn't a special thing called a 'callback' in the JavaScript language, it's just a convention. Instead of immediately returning some result like most functions, functions that use callbacks take some time to produce a result. The word 'asynchronous', aka 'async' just means 'takes some time' or 'happens in the future, not right now'. Usually callbacks are only used when doing I/O, e.g. downloading things, reading files, talking to databases, etc.
+
+</p>
+<p>When you call a normal function you can use its return value:
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="keyword">var</span> result <span class="keyword operator">=</span> <span class="function call">multiplyTwoNumbers</span>(<span class="constant numeric">5</span>, <span class="constant numeric">10</span>)
+console.<span class="support method">log</span>(result)
+<span class="comment">// 50 gets printed out</span></code></pre>
+<p>However, functions that are async and use callbacks don't return anything right away.
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="keyword">var</span> photo <span class="keyword operator">=</span> <span class="function call">downloadPhoto</span>(<span class="string">'http://coolcats.com/cat.gif'</span>)
+<span class="comment">// photo is 'undefined'!</span></code></pre>
+<p>In this case the gif might take a very long time to download, and you don't want your program to pause (aka 'block') while waiting for the download to finish.
+
+</p>
+<p>Instead, you store the code that should run after the download is complete in a function. This is the callback! You give it to the <code data-language="javascript" class="rainbow">downloadPhoto</code> function and it will run your callback (e.g. 'call you back later') when the download is complete, and pass in the photo (or an error if something went wrong).
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="function call">downloadPhoto</span>(<span class="string">'http://coolcats.com/cat.gif'</span>, handlePhoto)
+
+<span class="storage function">function</span> <span class="entity name function">handlePhoto </span>(error, photo) {
+  <span class="keyword">if</span> (error) console.<span class="function call">error</span>(<span class="string">'Download error!'</span>, error)
+  <span class="keyword">else</span> console.<span class="support method">log</span>(<span class="string">'Download finished'</span>, photo)
+}
+
+console.<span class="support method">log</span>(<span class="string">'Download started'</span>)</code></pre>
+<p>The biggest hurdle people have when trying to understand callbacks is understanding the order that things execute as a program runs. In this example three major things happen. First the <code data-language="javascript" class="rainbow">handlePhoto</code> function is declared, then the <code data-language="javascript" class="rainbow">downloadPhoto</code> function is invoked and passed the <code data-language="javascript" class="rainbow">handlePhoto</code> as its callback, and finally <code data-language="javascript" class="rainbow">'Download started'</code> is printed out.
+
+</p>
+<p>Note that the <code data-language="javascript" class="rainbow">handlePhoto</code> is not invoked yet, it is just created and passed as a callback into <code data-language="javascript" class="rainbow">downloadPhoto</code>. But it won't run until <code data-language="javascript" class="rainbow">downloadPhoto</code> finishes doing its task, which could take a long time depending on how fast the Internet connection is.
+
+</p>
+<p>This example is meant to illustrate two important concepts:
+
+</p>
+<ul>
+<li>The <code data-language="javascript" class="rainbow">handlePhoto</code> callback is just a way to store some things to do at a later time</li>
+<li>The order in which things happen does not read top-to-bottom, it jumps around based on when things complete</li>
+</ul>
+<h2>How do I fix callback hell?</h2>
+<p>Callback hell is caused by poor coding practices. Luckily writing better code isn't that hard!
+
+</p>
+<p>You only need to follow <strong>three rules</strong>:
+
+</p>
+<h2>1. Keep your code shallow</h2>
+<p>Here is some messy browser JavaScript that uses <a href="https://github.com/iriscouch/browser-request">browser-request</a> to make an AJAX request to a server:
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="keyword">var</span> form <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'form'</span>)
+form.onsubmit <span class="keyword operator">=</span> <span class="storage function">function</span> (submitEvent) {
+  <span class="keyword">var</span> name <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'input'</span>).value
+  <span class="function call">request</span>({
+    uri: <span class="string">"http://example.com/upload"</span>,
+    body: name,
+    method: <span class="string">"POST"</span>
+  }, <span class="storage function">function</span> (err, response, body) {
+    <span class="keyword">var</span> statusMessage <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'.status'</span>)
+    <span class="keyword">if</span> (err) <span class="keyword">return</span> statusMessage.value <span class="keyword operator">=</span> err
+    statusMessage.value <span class="keyword operator">=</span> body
+  })
+}</code></pre>
+<p>This code has two anonymous functions. Let's give em names!
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="keyword">var</span> form <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'form'</span>)
+form.onsubmit <span class="keyword operator">=</span> <span class="storage function">function</span> <span class="entity name function">formSubmit </span>(submitEvent) {
+  <span class="keyword">var</span> name <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'input'</span>).value
+  <span class="function call">request</span>({
+    uri: <span class="string">"http://example.com/upload"</span>,
+    body: name,
+    method: <span class="string">"POST"</span>
+  }, <span class="storage function">function</span> <span class="entity name function">postResponse </span>(err, response, body) {
+    <span class="keyword">var</span> statusMessage <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'.status'</span>)
+    <span class="keyword">if</span> (err) <span class="keyword">return</span> statusMessage.value <span class="keyword operator">=</span> err
+    statusMessage.value <span class="keyword operator">=</span> body
+  })
+}</code></pre>
+<p>As you can see naming functions is super easy and has some immediate benefits: 
+
+</p>
+<ul>
+<li>makes code easier to read thanks to the descriptive function names</li>
+<li>when exceptions happen you will get stacktraces that reference actual function names instead of "anonymous"</li>
+<li>allows you to move the functions and reference them by their names</li>
+</ul>
+<p>Now we can move the functions to the top level of our program:
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'form'</span>).onsubmit <span class="keyword operator">=</span> formSubmit
+
+<span class="storage function">function</span> <span class="entity name function">formSubmit </span>(submitEvent) {
+  <span class="keyword">var</span> name <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'input'</span>).value
+  <span class="function call">request</span>({
+    uri: <span class="string">"http://example.com/upload"</span>,
+    body: name,
+    method: <span class="string">"POST"</span>
+  }, postResponse)
+}
+
+<span class="storage function">function</span> <span class="entity name function">postResponse </span>(err, response, body) {
+  <span class="keyword">var</span> statusMessage <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'.status'</span>)
+  <span class="keyword">if</span> (err) <span class="keyword">return</span> statusMessage.value <span class="keyword operator">=</span> err
+  statusMessage.value <span class="keyword operator">=</span> body
+}</code></pre>
+<p>Note that the <code data-language="javascript" class="rainbow"><span class="keyword">function</span></code> declarations here are defined at the bottom of the file. This is thanks to <a href="https://gist.github.com/maxogden/4bed247d9852de93c94c">function hoisting</a>.
+
+</p>
+<h2>2. Modularize</h2>
+<p>This is the most important part: <strong>Anyone is capable of creating modules</strong> (aka libraries). To quote <a href="http://twitter.com/izs">Isaac Schlueter</a> (of the node.js project): <em>"Write small modules that each do one thing, and assemble them into other modules that do a bigger thing. You can't get into callback hell if you don't go there."</em>
+
+</p>
+<p>Let's take out the boilerplate code from above and turn it into a module by splitting it up into a couple of files. I'll show a module pattern that works for either browser code or server code (or code that works in both):
+
+</p>
+<p>Here is a new file called <code data-language="javascript" class="rainbow">formuploader.js</code> that contains our two functions from before:
+
+</p>
+<pre><code data-language="javascript" class="rainbow">module.exports.submit <span class="keyword operator">=</span> formSubmit
+
+<span class="storage function">function</span> <span class="entity name function">formSubmit </span>(submitEvent) {
+  <span class="keyword">var</span> name <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'input'</span>).value
+  <span class="function call">request</span>({
+    uri: <span class="string">"http://example.com/upload"</span>,
+    body: name,
+    method: <span class="string">"POST"</span>
+  }, postResponse)
+}
+
+<span class="storage function">function</span> <span class="entity name function">postResponse </span>(err, response, body) {
+  <span class="keyword">var</span> statusMessage <span class="keyword operator">=</span> <span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'.status'</span>)
+  <span class="keyword">if</span> (err) <span class="keyword">return</span> statusMessage.value <span class="keyword operator">=</span> err
+  statusMessage.value <span class="keyword operator">=</span> body
+}</code></pre>
+<p>The <code data-language="javascript" class="rainbow">module.exports</code> bit is an example of the node.js module system which works in node, Electron and the browser using <a href="https://github.com/substack/node-browserify">browserify</a>. I quite like this style of modules because it works everywhere, is very simple to understand and doesn't require complex configuration files or scripts.
+
+</p>
+<p>Now that we have <code data-language="javascript" class="rainbow">formuploader.js</code> (and it is loaded in the page as a script tag after being browserified) we just need to require it and use it! Here is how our application specific code looks now:
+
+</p>
+<pre><code data-language="javascript" class="rainbow"><span class="keyword">var</span> formUploader <span class="keyword operator">=</span> <span class="function call">require</span>(<span class="string">'formuploader'</span>)
+<span class="support">document</span>.<span class="function call">querySelector</span>(<span class="string">'form'</span>).onsubmit <span class="keyword operator">=</span> formUploader.submit</code></pre>
+<p>Now our application is only two lines of code and has the following benefits:
+
+</p>
+<ul>
+<li>easier for new developers to understand -- they won't get bogged down by having to read through all of the <code data-language="javascript" class="rainbow">formuploader</code> functions</li>
+<li><code data-language="javascript" class="rainbow">formuploader</code> can get used in other places without duplicating code and can easily be shared on github or npm</li>
+</ul>
+<h2>3. Handle every single error</h2>
+<p>There are different types of errors: syntax errors caused by the programmer (usually caught when you try to first run the program), runtime errors caused by the programmer (the code ran but had a bug that caused something to mess up), platform errors caused by things like invalid file permissions, hard drive failure, no network connection etc. This section is only meant to address this last class of errors.
+
+</p>
+<p>The first two rules are primarily about making your code readable, but this one is about making your code stable. When dealing with callbacks you are by definition dealing with tasks that get dispatched, go off and do something in the background, and then complete successfully or abort due to failure. Any experienced developer will tell you that you can never know when these errors happen, so you have to plan on them always happening.
+
+</p>
+<p>With callbacks the most popular way to handle errors is the Node.js style where the first argument to the callback is always reserved for an error.
+
+</p>
+<pre><code data-language="javascript" class="rainbow"> <span class="keyword">var</span> fs <span class="keyword operator">=</span> <span class="function call">require</span>(<span class="string">'fs'</span>)
+
+ fs.<span class="function call">readFile</span>(<span class="string">'/Does/not/exist'</span>, handleFile)
+
+ <span class="storage function">function</span> <span class="entity name function">handleFile </span>(error, file) {
+   <span class="keyword">if</span> (error) <span class="keyword">return</span> console.<span class="function call">error</span>(<span class="string">'Uhoh, there was an error'</span>, error)
+   <span class="comment">// otherwise, continue on and use `file` in your code</span>
+ }</code></pre>
+<p>Having the first argument be the <code data-language="javascript" class="rainbow">error</code> is a simple convention that encourages you to remember to handle your errors. If it was the second argument you could write code like <code data-language="javascript" class="rainbow"><span class="storage function">function</span> <span class="entity name function">handleFile </span>(file) { }</code> and more easily ignore the error.
+
+</p>
+<p>Code linters can also be configured to help you remember to handle callback errors. The simplest one to use is called <a href="http://standardjs.com/">standard</a>. All you have to do is run <code data-language="javascript" class="rainbow">$ standard</code> in your code folder and it will show you every callback in your code with an unhandled error.
+
+</p>
+<h3>Summary</h3>
+<ol>
+<li>Don't nest functions. Give them names and place them at the top level of your program</li>
+<li>Use <a href="https://gist.github.com/maxogden/4bed247d9852de93c94c">function hoisting</a> to your advantage to move functions 'below the fold'</li>
+<li>Handle <strong>every single error</strong> in every one of your callbacks. Use a linter like <a href="http://standardjs.com/">standard</a> to help you with this.</li>
+<li>Create reusable functions and place them in a module to reduce the cognitive load required to understand your code. Splitting your code into small pieces like this also helps you handle errors, write tests, forces you to create a stable and documented  public API for your code, and helps with refactoring.</li>
+</ol>
+<p>The most important aspect of avoiding callback hell is <strong>moving functions out of the way</strong> so that the programs flow can be more easily understood without newcomers having to wade through all the detail of the functions to get to the meat of what the program is trying to do.
+
+</p>
+<p>You can start by moving the functions to the bottom of the file, then graduate to moving them into another file that you load in using a relative require like <code data-language="javascript" class="rainbow"><span class="function call">require</span>(<span class="string">'./photo-helpers.js'</span>)</code> and then finally move them into a standalone module like <code data-language="javascript" class="rainbow"><span class="function call">require</span>(<span class="string">'image-resize'</span>)</code>.
+
+</p>
+<p>Here are some rules of thumb when creating a module:
+
+</p>
+<ul>
+<li>Start by moving repeatedly used code into a function</li>
+<li>When your function (or a group of functions related to the same theme) get big enough, move them into another file and expose them using <code data-language="javascript" class="rainbow">module.exports</code>. You can load this using a relative require</li>
+<li>If you have some code that can be used across multiple projects give it it's own readme, tests and <code data-language="javascript" class="rainbow">package.json</code> and publish it to github and npm. There are too many awesome benefits to this specific approach to list here!</li>
+<li>A good module is small and focuses on one problem</li>
+<li>Individual files in a module should not be longer than around 150 lines of JavaScript</li>
+<li>A module shouldn't have more than one level of nested folders full of JavaScript files. If it does, it is probably doing too many things</li>
+<li>Ask more experienced coders you know to show you examples of good modules until you have a good idea of what they look like. If it takes more than a few minutes to understand what is happening, it probably isn't a very good module.</li>
+</ul>
+<h3>More reading</h3>
+<p>Try reading my <a href="https://github.com/maxogden/art-of-node#callbacks">longer introduction to callbacks</a>, or try out some of the <a href="http://nodeschool.io/">nodeschool</a> tutorials.
+
+</p>
+<p>Also check out the <a href="https://github.com/substack/browserify-handbook">browserify-handbook</a> for examples of writing modular code.
+
+</p>
+<h3>What about promises/generators/ES6 etc?</h3>
+<p>Before looking at more advanced solutions, remember that callbacks are a fundamental part of JavaScript (since they are just functions) and you should learn how to read and write them before moving on to more advanced language features, since they all depend on an understanding of callbacks. If you can't yet write maintainable callback code, keep working at it!
+
+</p>
+<p>If you <em>really</em> want your async code to read top-to-bottom, there are some fancy things you can try. Note that <strong>these may introduce performance and/or cross platform runtime compatibility issues</strong>, so make sure to do your research.
+
+</p>
+<p><strong>Promises</strong> are a way to write async code that still appears as though it is executing in a top-down way, and handles more types of errors due to encouraged use of <code data-language="javascript" class="rainbow"><span class="keyword">try</span>/<span class="keyword">catch</span></code> style error handling.
+
+</p>
+<p><strong>Generators</strong> let you 'pause' individual functions without pausing the state of the whole program, which at the cost of slightly more complex to understand code lets your async code appear to execute in a top-down fashion. Check out <a href="https://github.com/mappum/watt">watt</a> for an example of this approach.
+
+</p>
+<p><strong>Async functions</strong> are a proposed ES7 feature that will further wrap generators and promises in a higher level syntax. Check them out if that sounds interesting to you.
+
+</p>
+<p>Personally I use callbacks for 90% of the async code I write and when things get complicated I bring in something like <a href="https://github.com/feross/run-parallel">run-parallel</a> or <a href="https://github.com/feross/run-series">run-series</a>. I don't think callbacks vs promises vs whatever else really make a difference for me, the biggest impact comes from keeping code simple, not nested and split up into small modules.
+
+</p>
+<p>Regardless of the method you choose, always <strong>handle every error</strong> and <strong>keep your code simple</strong>.
+
+</p>
+<h3>Remember, only <em>you</em> can prevent callback hell and forest fires</h3>
+<p>You can find the source for this <a href="http://github.com/maxogden/callback-hell">on github</a>.
+</p>
+</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="./Callback Hell_files/marked.js.download"></script>
+    <script type="text/javascript">
+      
+      var content = document.querySelector('.post-content')
+      content.setAttribute('style', "white-space: normal;")
+      
+      // kinda hacky but whatever
+      var lines = content.innerHTML.split('\n')
+      var baseIndent = lines[1].split('#')[0]
+      
+      lines = lines.map(function iterator(line) {
+        return line.replace(baseIndent, '')
+      })
+      
+      var trimmed = lines.join('\n')
+      content.innerHTML = marked(trimmed)
+    </script>
+    
+    <script src="./Callback Hell_files/rainbow.js.download"></script>
+    <script src="./Callback Hell_files/generic.js.download"></script>
+    <script src="./Callback Hell_files/javascript.js.download"></script>
+    <script type="text/javascript">
+    
+      var codeBlocks = document.querySelectorAll('code')
+          
+      Array.prototype.forEach.call(codeBlocks, function iterator(block) {
+        block.innerHTML = unescapeEntities(block.innerHTML)
+        block.setAttribute('data-language', 'javascript')
+      })
+      
+      Rainbow.color()
+      
+      // markdown is dumb and always escapes &, < and > with no way to override
+      function unescapeEntities(text) {
+        function un(text) {
+          var d = document.createElement("div")
+          d.innerHTML = text
+          return d.innerText || d.text || d.textContent
+        }
+        // need to unescape twice
+        // > -> &amp;gt; -> &gt; -> >
+        return un(un(text))
+      }
+      
+    </script>
+    
+    <script type="text/javascript">
+      var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+      document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/JavaScript'%3E%3C/script%3E"));
+    </script><script src="./Callback Hell_files/ga.js.download" type="text/JavaScript"></script>
+    <script type="text/javascript">
+      try {
+        var pageTracker = _gat._getTracker("UA-33352116-1");
+      pageTracker._trackPageview();
+      } catch(err) {}
+    </script>
+
+  
+
+</body><loom-container id="lo-engage-ext-container"><div></div><loom-shadow classname="resolved"></loom-shadow></loom-container></html>

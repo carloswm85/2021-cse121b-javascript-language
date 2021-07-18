@@ -10,7 +10,7 @@ personal['name'] = "Carlos W. Mercado";
 console.log(personal);
 
 // Step 3: Add another property named photo with a value of the image path and name (used in Task 2) as a string
-personal['photo'] = "../images/me-w04.jpg";
+personal['photo'] = "images/me-w04.jpg"; /* HEADS UP! This picture is called from the task4.html file, that's why it has that path. */
 console.log(personal);
 
 // Step 4: Add another property named favoriteFoods with a value of an array of your favorite foods as strings ( hint: [] )
@@ -113,16 +113,13 @@ listBuilder(personal.hobbies, 'hobbies');
 </dl>
 */
 // Step 9: Append the HTML <dt> and <dd> elements created above to the HTML <dl> element with an ID of places-lived
+const pl = dc('places-lived');
 personal.placesLived.forEach(element => {
-	const pl = dc('places-lived');
-	for (const [place, time] of Object.entries(element)) {
-		const term = document.createElement('dt');
-		term.textContent = place;
-		pl.appendChild(term);
-		const description = document.createElement('dd');
-		description.textContent = time;
-		pl.appendChild(description);
-	}
+	console.log(element);
+	const term = document.createElement('dt');
+	term.textContent = element.place;
+	pl.appendChild(term);
+	const description = document.createElement('dd');
+	description.textContent = element.length;
+	pl.appendChild(description);
 });
-
-// TODO: FINISH THIS
