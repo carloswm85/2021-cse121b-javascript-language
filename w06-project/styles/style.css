@@ -1,4 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Poly:ital@0;1&display=swap");
 /*! normalize.css v7.0.0 | MIT License | github.com/necolas/normalize.css */
 /* Document
    ========================================================================== */
@@ -430,19 +429,49 @@ template {
 }
 
 /* Main Primary color */
-/* Main Secondary color */
-/* Main Complement color */
 body {
   background-color: #c4ced1;
+  max-width: 550px;
+  margin: 1em auto 5em auto;
+  border: 1px solid #c4ced1;
+  border-radius: 5px;
 }
 
-/*
-	The partials files are:
-		_normalize.scss
-		_small.scss
-		_medium.scss
-		_large.scss
-		_variables.scss
-*/
+h1 {
+  text-align: center;
+}
+
+h2 {
+  font-size: 1.5em;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+}
+table td, table th {
+  border: 1px solid #01465A;
+  padding: 5px;
+}
+
+label {
+  max-width: 450px;
+  display: block;
+  margin: 1em auto;
+}
+label select {
+  float: right;
+}
+
+#button {
+  display: block;
+  margin: 0 auto;
+}
+
+p {
+  display: block;
+  text-align: center;
+  font-style: italic;
+}
 
 /*# sourceMappingURL=style.css.map */
